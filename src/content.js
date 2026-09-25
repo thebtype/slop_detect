@@ -38,12 +38,56 @@
     return (h >>> 0).toString(36);
   }
 
+  // Generic text containers, used when LinkedIn's class names don't match.
+  const GENERIC_TEXT = "[dir='ltr'], [data-testid*='text' i], [class*='commentary' i], [class*='text-view' i]";
+  const MIN_TEXT = 80;
+
   function findPostText(post) {
     for (const sel of TEXT_SELECTORS) {
       const el = post.querySelector(sel);
       if (el && el.innerText.trim().length) return el.innerText.trim();
     }
-    return "";
+    let best = "";
+    for (const el of post.querySelectorAll(GENERIC_TEXT)) {
+      if (el.closest(".slop-badge")) continue;
+      const t = el.innerText.trim();
+      if (t.length > best.length) best = t;
+    }
+    return best.length >= MIN_TEXT ? best : "";
+  }
+
+  // Every feed post has a "Comment" action button. Walk up from it to the
+  // smallest ancestor that also holds the post text; that is the post.
+  function findPostsByActionBar() {
+    const root = document.querySelector("main") || document.body;
+    const isCommentBtn = (b) => {
+      const label = (b.getAttribute("aria-label") || b.innerText || "").trim().toLowerCase();
+      return label === "comment" || label.startsWith("comment on");
+    };
+    const buttons = [...root.querySelectorAll("button, [role='button']")].filter(isCommentBtn);
+    const posts = [];
+    for (const btn of buttons) {
+      let el = btn.parentElement;
+      for (let depth = 0; el && el !== root && depth < 20; depth++, el = el.parentElement) {
+        // Climbed past this post into a container holding several posts.
+        if (buttons.some((b) => b !== btn && el.contains(b))) break;
+        if (findPostText(el)) {
+          posts.push(el);
+          break;
+        }
+      }
+    }
+    return posts;
+  }
+
+  function findPosts() {
+    const found = new Set(document.querySelectorAll(POST_SELECTORS.join(",")));
+    for (const el of findPostsByActionBar()) {
+      // Skip if a known container already covers this post.
+      if (![...found].some((f) => f.contains(el) || el.contains(f))) found.add(el);
+    }
+    // Reshares nest one post inside another; only label the outermost.
+    return [...found].filter((el) => ![...found].some((o) => o !== el && o.contains(el)));
   }
 
   function postId(post, text) {
@@ -57,11 +101,37 @@
     return { cls: "human", text: "Looks human" };
   }
 
+  // Small on-page counter so it's obvious the extension is running even when
+  // nothing in view is slop.
+  const stats = { scanned: 0, flagged: 0 };
+  let statusEl = null;
+  let statusDismissed = false;
+
+  function updateStatus() {
+    if (statusDismissed || !settings.enabled || !document.body) return;
+    if (!statusEl) {
+      statusEl = document.createElement("button");
+      statusEl.type = "button";
+      statusEl.className = "slop-status";
+      statusEl.title = "Slop Detect is running. Click to hide.";
+      statusEl.addEventListener("click", () => {
+        statusDismissed = true;
+        statusEl.remove();
+      });
+    }
+    if (!statusEl.isConnected) document.body.appendChild(statusEl);
+    statusEl.textContent = `🤖 Slop Detect · ${stats.scanned} scanned · ${stats.flagged} flagged`;
+  }
+
   function render(post, { score, reasons, source, error }) {
     post.querySelector(":scope > .slop-badge")?.remove();
     post.classList.remove("slop-dim", "slop-collapsed");
 
     const label = verdictLabel(score);
+    if (label.cls !== "human") {
+      stats.flagged++;
+      updateStatus();
+    }
     if (label.cls === "human" && !settings.showHuman && !error) return;
 
     const badge = document.createElement("div");
@@ -123,14 +193,14 @@
 
   async function processPost(post) {
     if (post.dataset[DONE]) return;
-    // Reshares nest one post inside another; only label the outermost.
-    if (post.parentElement?.closest(POST_SELECTORS.join(","))) return;
 
     const text = findPostText(post);
     if (!text) return; // text may not be rendered yet; retry on next mutation
     post.dataset[DONE] = "1";
 
     const local = SlopHeuristics.scoreText(text);
+    stats.scanned++;
+    updateStatus();
     const wantClaude =
       settings.mode === "claude" || (settings.mode === "hybrid" && local.score >= settings.hybridGate);
 
@@ -149,7 +219,8 @@
 
   function scan() {
     if (!settings.enabled) return;
-    document.querySelectorAll(POST_SELECTORS.join(",")).forEach((post) => {
+    updateStatus();
+    findPosts().forEach((post) => {
       processPost(post).catch((err) => console.warn("[slop-detect]", err));
     });
   }
@@ -158,6 +229,9 @@
     document.querySelectorAll(".slop-badge").forEach((b) => b.remove());
     document.querySelectorAll(".slop-dim, .slop-collapsed").forEach((p) => p.classList.remove("slop-dim", "slop-collapsed"));
     document.querySelectorAll("[data-slop-done]").forEach((p) => delete p.dataset[DONE]);
+    stats.scanned = 0;
+    stats.flagged = 0;
+    if (!settings.enabled) statusEl?.remove();
   }
 
   let timer = null;

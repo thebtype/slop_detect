@@ -47,3 +47,21 @@
   .slop-source { color: #94a3b8; }
   .slop-reveal { background: #1e293b; color: #e2e8f0; border-color: #475569; }
 }
+
+.slop-status {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 9999;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  padding: 4px 12px;
+  background: #ffffff;
+  color: #334155;
+  font: 600 12px/1.4 -apple-system, system-ui, "Segoe UI", Roboto, sans-serif;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
+  cursor: pointer;
+}
+@media (prefers-color-scheme: dark) {
+  .slop-status { background: #1e293b; color: #e2e8f0; border-color: #475569; }
+}

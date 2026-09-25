@@ -41,4 +41,4 @@ npm test   # heuristic scorer unit tests (Node 18+, no dependencies)
 - `src/background.js`: Claude API calls and the verdict cache
 - `src/options.html`, `src/options.js`: settings page
 
-LinkedIn changes its markup often. If badges stop appearing, update `POST_SELECTORS` / `TEXT_SELECTORS` at the top of `src/content.js`.
+LinkedIn changes its markup often. Posts are found by known class names first, then by walking up from each post's "Comment" button, so detection survives most redesigns. A counter in the bottom-left corner shows how many posts were scanned and flagged; if it says 0 scanned, the post detection in `src/content.js` needs updating.
