@@ -36,8 +36,8 @@
 .slop-details ul { margin: 0; padding-left: 18px; list-style: disc; }
 .slop-source { margin-top: 4px; color: #64748b; font-size: 11px; }
 
-.slop-dim > :not(.slop-badge) { opacity: 0.35; transition: opacity 0.15s; }
-.slop-dim:hover > :not(.slop-badge) { opacity: 1; }
+.slop-dim > :not(.slop-badge):not(.slop-stamp) { opacity: 0.35; transition: opacity 0.15s; }
+.slop-dim:hover > :not(.slop-badge):not(.slop-stamp) { opacity: 1; }
 
 .slop-collapsed > :not(.slop-badge) { display: none !important; }
 .slop-collapsed { padding-bottom: 8px; }
@@ -64,4 +64,102 @@
 }
 @media (prefers-color-scheme: dark) {
   .slop-status { background: #1e293b; color: #e2e8f0; border-color: #475569; }
+}
+
+/* ---- Big stamp across slop posts ---- */
+.slop-stamped { position: relative !important; }
+
+.slop-stamp {
+  --stamp: #dc2626;
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none; /* post stays fully clickable */
+  overflow: hidden;
+  opacity: 0;
+}
+.slop-stamped-maybe .slop-stamp { --stamp: #d97706; }
+
+/* Faint wash over the whole post. */
+.slop-stamp::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    -45deg,
+    color-mix(in srgb, var(--stamp) 7%, transparent) 0 14px,
+    transparent 14px 28px
+  );
+  opacity: 0;
+}
+
+.slop-stamp-main,
+.slop-stamp-sub {
+  position: relative;
+  color: var(--stamp);
+  font-family: Impact, "Arial Black", "Helvetica Neue", system-ui, sans-serif;
+  text-transform: uppercase;
+  transform: rotate(-14deg);
+}
+.slop-stamp-main {
+  font-size: 64px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  padding: 10px 26px 6px;
+  border: 6px double var(--stamp);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--stamp) 6%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--stamp) 25%, transparent);
+  /* Slightly uneven ink. */
+  -webkit-mask-image: repeating-radial-gradient(circle at 30% 40%, #000 0 3px, rgba(0, 0, 0, 0.82) 3px 5px);
+          mask-image: repeating-radial-gradient(circle at 30% 40%, #000 0 3px, rgba(0, 0, 0, 0.82) 3px 5px);
+}
+.slop-stamped-maybe .slop-stamp-main { font-size: 44px; border-width: 5px; }
+.slop-stamp-sub {
+  margin-top: 14px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  opacity: 0.85;
+}
+
+/* Animation: plays once, when the post scrolls into view. */
+.slop-stamp.slop-stamp-in { animation: slop-fade-in 0.15s ease-out forwards; }
+.slop-stamp.slop-stamp-in::before { animation: slop-wash 0.6s ease-out 0.25s forwards; }
+.slop-stamp.slop-stamp-in .slop-stamp-main { animation: slop-slam 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.3) both; }
+.slop-stamp.slop-stamp-in .slop-stamp-sub { animation: slop-slam 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.3) 0.12s both; }
+.slop-stamped:has(> .slop-stamp-in) { animation: slop-shake 0.35s ease-out 0.28s; }
+
+@keyframes slop-fade-in { to { opacity: 1; } }
+@keyframes slop-wash { to { opacity: 1; } }
+@keyframes slop-slam {
+  0%   { opacity: 0; transform: rotate(-24deg) scale(2.6); filter: blur(3px); }
+  60%  { opacity: 1; transform: rotate(-12deg) scale(0.92); filter: blur(0); }
+  80%  { transform: rotate(-15deg) scale(1.04); }
+  100% { opacity: 1; transform: rotate(-14deg) scale(1); }
+}
+@keyframes slop-shake {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(-3px, 2px); }
+  50% { transform: translate(3px, -1px); }
+  75% { transform: translate(-1px, 1px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slop-stamp.slop-stamp-in,
+  .slop-stamp.slop-stamp-in::before,
+  .slop-stamp.slop-stamp-in .slop-stamp-main,
+  .slop-stamp.slop-stamp-in .slop-stamp-sub,
+  .slop-stamped:has(> .slop-stamp-in) { animation: none; opacity: 1; }
+  .slop-stamp.slop-stamp-in::before { opacity: 1; }
+}
+
+@media (prefers-color-scheme: dark) {
+  .slop-stamp { --stamp: #f87171; }
+  .slop-stamped-maybe .slop-stamp { --stamp: #fbbf24; }
 }

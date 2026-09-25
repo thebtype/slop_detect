@@ -5,11 +5,12 @@ const DEFAULTS = {
   hybridGate: 25,
   action: "label",
   showHuman: false,
+  stamp: true,
   model: "claude-opus-5",
 };
 
 const $ = (id) => document.getElementById(id);
-const CHECKBOXES = ["enabled", "showHuman"];
+const CHECKBOXES = ["enabled", "showHuman", "stamp"];
 const NUMBERS = ["threshold", "hybridGate"];
 const SELECTS = ["mode", "action", "model"];
 

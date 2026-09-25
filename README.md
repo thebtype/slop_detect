@@ -2,7 +2,7 @@
 
 A Chrome extension that labels likely AI-generated "slop" in your LinkedIn feed.
 
-Each post gets a small badge: **🤖 AI slop**, **Maybe slop**, or (optionally) **Looks human**, with a 0–100 score. Click the badge to see why it was flagged.
+Slop posts get a big red **AI SLOP** stamp that slams down across the post as it scrolls into view (amber **SLOP?** for borderline ones). Each post also gets a small badge: **🤖 AI slop**, **Maybe slop**, or (optionally) **Looks human**, with a 0–100 score. Click the badge to see why it was flagged.
 
 ## Install (developer mode)
 
@@ -27,6 +27,7 @@ The Claude modes need an [Anthropic API key](https://console.anthropic.com/). Th
 
 - **Slop threshold**: the score at which a post counts as slop (default 50).
 - **What to do with slop**: just label it, dim it, or collapse it behind a "Show post" button.
+- **Big animated stamp across slop posts**: on by default; turn off to keep just the small badge. The animation is skipped if your OS has reduced motion turned on.
 - **Also label posts that look human**: off by default, to keep the feed quiet.
 - **Claude model**: Opus 5 (default), Sonnet 5, or Haiku 4.5.
 

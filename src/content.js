@@ -9,6 +9,7 @@
     hybridGate: 25, // hybrid mode: only ask Claude when the local score reaches this
     action: "label", // "label" | "dim" | "collapse"
     showHuman: false, // also label posts that look human
+    stamp: true, // big animated stamp across slop posts
   };
 
   // LinkedIn's markup changes often; keep several fallbacks.
@@ -125,7 +126,8 @@
 
   function render(post, { score, reasons, source, error }) {
     post.querySelector(":scope > .slop-badge")?.remove();
-    post.classList.remove("slop-dim", "slop-collapsed");
+    post.querySelector(":scope > .slop-stamp")?.remove();
+    post.classList.remove("slop-dim", "slop-collapsed", "slop-stamped", "slop-stamped-slop", "slop-stamped-maybe");
 
     const label = verdictLabel(score);
     if (label.cls !== "human") {
@@ -173,6 +175,7 @@
         e.stopPropagation();
         post.classList.remove("slop-collapsed");
         reveal.remove();
+        addStamp(post, label, score);
       });
       badge.append(reveal);
     } else if (label.cls === "slop" && settings.action === "dim") {
@@ -180,6 +183,36 @@
     }
 
     post.prepend(badge);
+    if (!post.classList.contains("slop-collapsed")) addStamp(post, label, score);
+  }
+
+  // Stamps slam down the first time their post scrolls into view.
+  const stampObserver = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        entry.target.classList.add("slop-stamp-in");
+        stampObserver.unobserve(entry.target);
+      }
+    },
+    { threshold: 0.4 }
+  );
+
+  function addStamp(post, label, score) {
+    if (!settings.stamp || label.cls === "human") return;
+    const stamp = document.createElement("div");
+    stamp.className = "slop-stamp";
+    stamp.setAttribute("aria-hidden", "true");
+    const main = document.createElement("div");
+    main.className = "slop-stamp-main";
+    main.textContent = label.cls === "slop" ? "AI SLOP" : "SLOP?";
+    const sub = document.createElement("div");
+    sub.className = "slop-stamp-sub";
+    sub.textContent = `score ${score}/100`;
+    stamp.append(main, sub);
+    post.classList.add("slop-stamped", `slop-stamped-${label.cls}`);
+    post.appendChild(stamp);
+    stampObserver.observe(stamp);
   }
 
   function classifyWithClaude(id, text) {
@@ -226,8 +259,10 @@
   }
 
   function resetAll() {
-    document.querySelectorAll(".slop-badge").forEach((b) => b.remove());
-    document.querySelectorAll(".slop-dim, .slop-collapsed").forEach((p) => p.classList.remove("slop-dim", "slop-collapsed"));
+    document.querySelectorAll(".slop-badge, .slop-stamp").forEach((b) => b.remove());
+    document
+      .querySelectorAll(".slop-dim, .slop-collapsed, .slop-stamped")
+      .forEach((p) => p.classList.remove("slop-dim", "slop-collapsed", "slop-stamped", "slop-stamped-slop", "slop-stamped-maybe"));
     document.querySelectorAll("[data-slop-done]").forEach((p) => delete p.dataset[DONE]);
     stats.scanned = 0;
     stats.flagged = 0;
