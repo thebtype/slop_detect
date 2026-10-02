@@ -48,8 +48,11 @@
     <select id="action">
       <option value="label">Just label it</option>
       <option value="dim">Label and dim it</option>
-      <option value="collapse">Label and collapse it</option>
     </select>
+
+    <div class="row"><input type="checkbox" id="autoCollapse"><label for="autoCollapse">Auto-collapse near-certain slop</label></div>
+    <label for="collapseAt">Auto-collapse at score <span class="hint">(only posts at or above this are hidden; the rest stay open with a Collapse button)</span></label>
+    <input type="number" id="collapseAt" min="1" max="100">
 
     <div class="row"><input type="checkbox" id="stamp"><label for="stamp">Big animated stamp across slop posts</label></div>
     <div class="row"><input type="checkbox" id="showHuman"><label for="showHuman">Also label posts that look human</label></div>

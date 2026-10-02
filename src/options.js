@@ -4,20 +4,24 @@ const DEFAULTS = {
   threshold: 50,
   hybridGate: 25,
   action: "label",
+  autoCollapse: false,
+  collapseAt: 90,
   showHuman: false,
   stamp: true,
   model: "claude-opus-5",
 };
 
 const $ = (id) => document.getElementById(id);
-const CHECKBOXES = ["enabled", "showHuman", "stamp"];
-const NUMBERS = ["threshold", "hybridGate"];
+const CHECKBOXES = ["enabled", "autoCollapse", "showHuman", "stamp"];
+const NUMBERS = ["threshold", "hybridGate", "collapseAt"];
 const SELECTS = ["mode", "action", "model"];
 
 async function load() {
   const { settings } = await chrome.storage.sync.get("settings");
   const { apiKey } = await chrome.storage.local.get("apiKey");
   const s = { ...DEFAULTS, ...(settings || {}) };
+  // Migrate the old "collapse all slop" action to the auto-collapse switch.
+  if (s.action === "collapse") Object.assign(s, { action: "label", autoCollapse: true });
   CHECKBOXES.forEach((k) => ($(k).checked = s[k]));
   NUMBERS.forEach((k) => ($(k).value = s[k]));
   SELECTS.forEach((k) => ($(k).value = s[k]));

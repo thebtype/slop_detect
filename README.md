@@ -26,7 +26,8 @@ The Claude modes need an [Anthropic API key](https://console.anthropic.com/). Th
 ## Settings
 
 - **Slop threshold**: the score at which a post counts as slop (default 50).
-- **What to do with slop**: just label it, dim it, or collapse it behind a "Show post" button.
+- **What to do with slop**: just label it, or label and dim it.
+- **Auto-collapse near-certain slop**: off by default. When on, only posts scoring at or above the "auto-collapse at" score (default 90) are hidden automatically; lower-scoring flagged posts stay open. Every flagged post also has a **Collapse** / **Show post** button so you can hide or expand it yourself.
 - **Big animated stamp across slop posts**: on by default; turn off to keep just the small badge. The animation is skipped if your OS has reduced motion turned on.
 - **Also label posts that look human**: off by default, to keep the feed quiet.
 - **Claude model**: Opus 5 (default), Sonnet 5, or Haiku 4.5.

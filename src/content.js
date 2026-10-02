@@ -7,7 +7,9 @@
     mode: "heuristic", // "heuristic" | "hybrid" | "claude"
     threshold: 50, // score at or above this counts as slop
     hybridGate: 25, // hybrid mode: only ask Claude when the local score reaches this
-    action: "label", // "label" | "dim" | "collapse"
+    action: "label", // "label" | "dim"
+    autoCollapse: false, // auto-collapse only near-certain slop
+    collapseAt: 90, // score at or above this is auto-collapsed
     showHuman: false, // also label posts that look human
     stamp: true, // big animated stamp across slop posts
   };
@@ -165,25 +167,29 @@
     });
     badge.append(pill, details);
 
-    if (label.cls === "slop" && settings.action === "collapse") {
-      post.classList.add("slop-collapsed");
-      const reveal = document.createElement("button");
-      reveal.type = "button";
-      reveal.className = "slop-reveal";
-      reveal.textContent = "Show post";
-      reveal.addEventListener("click", (e) => {
+    // Every flagged post gets a collapse/expand toggle.
+    if (label.cls !== "human") {
+      const toggle = document.createElement("button");
+      toggle.type = "button";
+      toggle.className = "slop-reveal";
+      const setCollapsed = (collapsed) => {
+        post.classList.toggle("slop-collapsed", collapsed);
+        toggle.textContent = collapsed ? "Show post" : "Collapse";
+        toggle.title = collapsed ? "Expand this post" : "Hide this post";
+      };
+      toggle.addEventListener("click", (e) => {
         e.stopPropagation();
-        post.classList.remove("slop-collapsed");
-        reveal.remove();
-        addStamp(post, label, score);
+        setCollapsed(!post.classList.contains("slop-collapsed"));
       });
-      badge.append(reveal);
-    } else if (label.cls === "slop" && settings.action === "dim") {
-      post.classList.add("slop-dim");
+      badge.append(toggle);
+      // Older versions had a "collapse" action that collapsed all slop.
+      const auto = settings.autoCollapse || settings.action === "collapse";
+      setCollapsed(auto && score >= settings.collapseAt);
     }
+    if (label.cls === "slop" && settings.action === "dim") post.classList.add("slop-dim");
 
     post.prepend(badge);
-    if (!post.classList.contains("slop-collapsed")) addStamp(post, label, score);
+    addStamp(post, label, score);
   }
 
   // Stamps slam down the first time their post scrolls into view.
