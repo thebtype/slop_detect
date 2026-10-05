@@ -2,10 +2,14 @@
   "manifest_version": 3,
   "name": "Slop Detect for LinkedIn",
   "version": "0.1.0",
-  "description": "Labels likely AI-generated slop in your LinkedIn feed.",
-  "permissions": ["storage"],
+  "description": "Flags AI-generated slop and engagement bait in your LinkedIn feed with a score, reasons and an optional collapse.",
+  "permissions": [
+    "storage"
+  ],
   "host_permissions": [
-    "https://www.linkedin.com/*",
+    "https://www.linkedin.com/*"
+  ],
+  "optional_host_permissions": [
     "https://api.anthropic.com/*"
   ],
   "background": {
@@ -13,9 +17,16 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://www.linkedin.com/*"],
-      "js": ["src/heuristics.js", "src/content.js"],
-      "css": ["src/content.css"],
+      "matches": [
+        "https://www.linkedin.com/*"
+      ],
+      "js": [
+        "src/heuristics.js",
+        "src/content.js"
+      ],
+      "css": [
+        "src/content.css"
+      ],
       "run_at": "document_idle"
     }
   ],

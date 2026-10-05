@@ -24,6 +24,9 @@
     .row label { margin: 0; font-weight: 400; }
     button { background: var(--accent); color: #fff; border: 0; border-radius: 6px; padding: 8px 16px; font: inherit; font-weight: 600; cursor: pointer; }
     #status { margin-left: 10px; color: var(--muted); }
+    .consent { align-items: flex-start; font-size: 12px; color: var(--muted); }
+    .consent input { margin-top: 3px; }
+    a { color: var(--accent); }
   </style>
 </head>
 <body>
@@ -61,6 +64,8 @@
   <section>
     <label for="apiKey">Anthropic API key <span class="hint">(only needed for Hybrid / Claude modes; stored on this device only)</span></label>
     <input type="password" id="apiKey" placeholder="sk-ant-..." autocomplete="off">
+
+    <div class="row consent"><input type="checkbox" id="claudeConsent"><label for="claudeConsent">I understand that in Hybrid and Claude modes, the text of LinkedIn posts is sent to Anthropic's API using my key. In the default local mode nothing leaves my browser. <a href="https://github.com/thebtype/slop_detect/blob/HEAD/PRIVACY.md" target="_blank" rel="noopener">Privacy policy</a></label></div>
 
     <label for="model">Claude model</label>
     <select id="model">

@@ -64,7 +64,9 @@
   function findPostsByActionBar() {
     const root = document.querySelector("main") || document.body;
     const isCommentBtn = (b) => {
-      const label = (b.getAttribute("aria-label") || b.innerText || "").trim().toLowerCase();
+      // Ignore icons/emoji and counts around the word, e.g. "💬 Comment".
+      const raw = (b.getAttribute("aria-label") || b.innerText || "").toLowerCase();
+      const label = raw.replace(/[^a-z ]+/g, " ").replace(/\s+/g, " ").trim();
       return label === "comment" || label.startsWith("comment on");
     };
     const buttons = [...root.querySelectorAll("button, [role='button']")].filter(isCommentBtn);

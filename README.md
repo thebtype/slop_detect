@@ -44,3 +44,11 @@ npm test   # heuristic scorer unit tests (Node 18+, no dependencies)
 - `src/options.html`, `src/options.js`: settings page
 
 LinkedIn changes its markup often. Posts are found by known class names first, then by walking up from each post's "Comment" button, so detection survives most redesigns. A counter in the bottom-left corner shows how many posts were scanned and flagged; if it says 0 scanned, the post detection in `src/content.js` needs updating.
+
+## Publishing to the Chrome Web Store
+
+```
+npm run package   # runs tests, then builds dist/slop-detect-<version>.zip
+```
+
+Upload that zip in the [Chrome Web Store developer dashboard](https://chrome.google.com/webstore/devconsole). Listing text, permission justifications, data-usage answers and image assets are in [`store/`](store/listing.md); the privacy policy is [`PRIVACY.md`](PRIVACY.md). Bump `version` in `manifest.json` for every update you upload.

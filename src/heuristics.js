@@ -69,7 +69,7 @@
 
     // Em dashes are common in LLM prose.
     const dashes = countMatches(text, EM_DASH);
-    if (dashes >= 2 || per100(dashes) > 1) add(Math.min(dashes * 3, 15), `${dashes} em dashes`);
+    if (dashes >= 2 || per100(dashes) > 1) add(Math.min(dashes * 3, 15), `${dashes} em dash${dashes === 1 ? "" : "es"}`);
 
     // "Broetry": one short sentence per line.
     if (lines.length >= 6) {

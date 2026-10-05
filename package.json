@@ -4,6 +4,7 @@
   "private": true,
   "description": "Chrome extension that labels AI slop in your LinkedIn feed",
   "scripts": {
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "package": "bash scripts/package.sh"
   }
 }

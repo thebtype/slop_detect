@@ -8,11 +8,13 @@ const DEFAULTS = {
   collapseAt: 90,
   showHuman: false,
   stamp: true,
+  claudeConsent: false,
   model: "claude-opus-5",
 };
 
+const ANTHROPIC_ORIGIN = "https://api.anthropic.com/*";
 const $ = (id) => document.getElementById(id);
-const CHECKBOXES = ["enabled", "autoCollapse", "showHuman", "stamp"];
+const CHECKBOXES = ["enabled", "autoCollapse", "showHuman", "stamp", "claudeConsent"];
 const NUMBERS = ["threshold", "hybridGate", "collapseAt"];
 const SELECTS = ["mode", "action", "model"];
 
@@ -35,9 +37,21 @@ async function save() {
   SELECTS.forEach((k) => (settings[k] = $(k).value));
 
   const apiKey = $("apiKey").value.trim();
-  if (settings.mode !== "heuristic" && !apiKey) {
-    $("status").textContent = "Add an API key to use Claude modes.";
-    return;
+  if (settings.mode !== "heuristic") {
+    if (!apiKey) {
+      $("status").textContent = "Add an API key to use Claude modes.";
+      return;
+    }
+    if (!settings.claudeConsent) {
+      $("status").textContent = "Tick the box confirming post text may be sent to Anthropic.";
+      return;
+    }
+    // Must be the first await so it still counts as part of the click.
+    const granted = await chrome.permissions.request({ origins: [ANTHROPIC_ORIGIN] });
+    if (!granted) {
+      $("status").textContent = "Claude modes need permission to contact api.anthropic.com.";
+      return;
+    }
   }
   await chrome.storage.sync.set({ settings });
   await chrome.storage.local.set({ apiKey });

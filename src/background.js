@@ -56,6 +56,8 @@ async function cachePut(id, verdict) {
 async function classifyWithClaude(text, model) {
   const apiKey = await getApiKey();
   if (!apiKey) throw new Error("No Anthropic API key set. Open the extension options.");
+  const allowed = await chrome.permissions.contains({ origins: ["https://api.anthropic.com/*"] });
+  if (!allowed) throw new Error("Permission to reach api.anthropic.com not granted. Re-save the extension options.");
 
   const headers = {
     "content-type": "application/json",
@@ -97,6 +99,7 @@ chrome.runtime.onMessage.addListener((req, _sender, sendResponse) => {
   if (req?.type !== "classify") return false;
   (async () => {
     const settings = await getSettings();
+    if (!settings.claudeConsent) throw new Error("Claude modes need your consent in the extension options.");
     const model = settings.model || "claude-opus-5";
     const cacheId = `${model}:${req.id}`;
     const cached = await cacheGet(cacheId);
